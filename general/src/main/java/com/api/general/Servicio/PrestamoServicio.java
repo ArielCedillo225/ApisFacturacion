@@ -51,7 +51,7 @@ public class PrestamoServicio {
         
         prestamoRepositorio.ConsultarDevolucion(fechaActual);
         
-        checkPrestamosVencidos = prestamoRepositorio.ConsultaEnMora();
+        checkPrestamosVencidos = prestamoRepositorio.ConsultaEnMora(pPrestamo.getCliente());
         
         if (checkPrestamosVencidos.isEmpty()) {
             LocalDateTime fecha = LocalDateTime.now();
