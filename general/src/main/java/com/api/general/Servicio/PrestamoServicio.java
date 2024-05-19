@@ -13,6 +13,7 @@ import com.api.general.modelo.Cliente;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
@@ -47,16 +48,16 @@ public class PrestamoServicio {
         
         int stockRestante;
         
-        Date fechaActual = new Date();
+        Date fechaActualSinFormato = new Date();
         
-        prestamoRepositorio.ConsultarDevolucion(fechaActual);
+        prestamoRepositorio.ConsultarDevolucion(fechaActualSinFormato);
         
         checkPrestamosVencidos = prestamoRepositorio.ConsultaEnMora(pPrestamo.getCliente());
         
         if (checkPrestamosVencidos.isEmpty()) {
             LocalDateTime fecha = LocalDateTime.now();
-            LocalDateTime fechaMesExtra = fecha.plus(1, ChronoUnit.MONTHS);
-            Date devolucion = Date.from(fechaMesExtra.toInstant(ZoneOffset.UTC));
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            String fechaActual = fecha.format(formatter);
 
             pProducto = productoRepositorio.ConsulaProductoId(pPrestamo.getProducto());
             pCliente = clienteRepositorio.ConsultaClienteId(pPrestamo.getCliente());
@@ -67,8 +68,9 @@ public class PrestamoServicio {
                 try {
                     stockRestante=pProducto.getCantidad()-pPrestamo.getCantidad();
                     pProducto.setCantidad(stockRestante);
+                    pPrestamo.setEstado(4);
                     pPrestamo.setFechaCreacion(fechaActual);
-                    pPrestamo.setFechaDevolucion(devolucion);
+                    
                     productoRepositorio.save(pProducto);
                     prestamoRepositorio.save(pPrestamo);
                     return ("Prestamo generado correctamente");
@@ -95,6 +97,10 @@ public class PrestamoServicio {
         
         if(pPrestamo.getEstado()==5){
             return "Prestamo ya devuelto.";
+        }
+        
+        if(pPrestamo.getCantidad()<=0){
+            return "La cantidad de productos debe ser mayor a cero.";
         }
         
         Producto pProducto = new Producto();
@@ -148,9 +154,9 @@ public class PrestamoServicio {
             errores=errores+ "No se encontró el cliente correspondiente. ";
         if(pProducto != null && cantidad>pProducto.getCantidad())
              errores=errores+ "No hay suficiente stock. ";
-        if (pProducto != null && pProducto.getEstado()!=2)
+        if (pProducto != null && pProducto.getEstado()!=1)
              errores=errores+ "Producto no activo. ";
-        if (pCliente != null && pCliente.getEstado()!=2)
+        if (pCliente != null && pCliente.getEstado()!=1)
              errores=errores+ "Cliente no activo. ";
         
         return errores;

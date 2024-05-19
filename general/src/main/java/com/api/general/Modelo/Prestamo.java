@@ -53,7 +53,7 @@ public class Prestamo {
     
     @NotNull(message="La fecha de creación del prestamo es obligatoria")
     @Column(name="PRE_FechaCreacion")
-    private Date fechaCreacion;
+    private String fechaCreacion;
     
     @NotNull(message="La fecha de devolucion es obligatoria")
     @Column(name="PRE_FechaDevolucion")

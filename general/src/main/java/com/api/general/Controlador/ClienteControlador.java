@@ -71,8 +71,8 @@ public class ClienteControlador {
     }
     
     @GetMapping("/Cliente/ActualizarEstado/{ci}")
-    public RespuestaApi ActualizarEstadoCliente(@PathVariable("ci") String cId){
-        return clienteServicio.ActualizarEstado(cId);
+    public RespuestaApi ActualizarEstadoCliente(@RequestBody String pCedula){
+        return clienteServicio.ActualizarEstado(pCedula);
     }
     
     
