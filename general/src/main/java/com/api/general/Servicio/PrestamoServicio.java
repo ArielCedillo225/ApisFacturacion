@@ -10,11 +10,9 @@ import com.api.general.Repositorio.ClienteRepositorio;
 import com.api.general.Repositorio.PrestamoRepositorio;
 import com.api.general.Repositorio.ProductoRepositorio;
 import com.api.general.modelo.Cliente;
-import java.time.LocalDate;
+import com.api.general.Modelo.Devolucion;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -35,7 +33,7 @@ public class PrestamoServicio {
      @Autowired
     private ClienteRepositorio clienteRepositorio;
     public List<Prestamo> ListarPrestamo(){
-        return prestamoRepositorio.findAll();
+        return prestamoRepositorio.ConsultaNoDevueltos();
     }
     
     public String CrearPrestamo(Prestamo pPrestamo){
@@ -85,24 +83,19 @@ public class PrestamoServicio {
         }
     }
     
-    public String DevolucionPrestamo(int pId){
+    public String DevolucionPrestamo(Devolucion pDevolucion){
         
-        Prestamo pPrestamo = new Prestamo();
-        
-        pPrestamo = prestamoRepositorio.ConsultaPrestamoId(pId);
-        
+        if(pDevolucion.getParcial()==1){
+            return DevolucionParcial(pDevolucion);
+        } else{
+        Prestamo pPrestamo = new Prestamo();       
+        pPrestamo = prestamoRepositorio.ConsultaPrestamoId(pDevolucion.getId());
         if(pPrestamo==null){
             return "Id del prestamo no encontrado.";
-        }
-        
+        }       
         if(pPrestamo.getEstado()==5){
             return "Prestamo ya devuelto.";
-        }
-        
-        if(pPrestamo.getCantidad()<=0){
-            return "La cantidad de productos debe ser mayor a cero.";
-        }
-        
+        }       
         Producto pProducto = new Producto();
         Cliente pCliente = new Cliente();
         String errors="";
@@ -116,9 +109,53 @@ public class PrestamoServicio {
                 stockRestante=pProducto.getCantidad()+pPrestamo.getCantidad();
                 pProducto.setCantidad(stockRestante);
                 pPrestamo.setEstado(5);
+                pPrestamo.setCantidad(0);
                 productoRepositorio.save(pProducto);
                 prestamoRepositorio.save(pPrestamo);
                 return ("Producto Devuelto Correctamente");
+            } catch (Exception e) {
+                return ("Error generando usuarios, intentelo nuevamente. " + e.getMessage());
+            }
+        } else {
+            return "Se encontraron los siguientes errores: " + errors + " Intente nuevamente";
+        }    }
+    }
+    
+     public String DevolucionParcial(Devolucion pDevolucion){
+        
+        Prestamo pPrestamo = new Prestamo();
+        
+        pPrestamo = prestamoRepositorio.ConsultaPrestamoId(pDevolucion.getId());
+        
+        if(pPrestamo==null){
+            return "Id del prestamo no encontrado.";
+        }
+        
+        if(pPrestamo.getEstado()==5){
+            return "Prestamo ya devuelto.";
+        }
+        
+        
+        Producto pProducto = new Producto();
+        Cliente pCliente = new Cliente();
+        String errors="";
+        int stockRestante;
+        pProducto = productoRepositorio.ConsulaProductoId(pPrestamo.getProducto());
+        pCliente = clienteRepositorio.ConsultaClienteId(pPrestamo.getCliente());
+        errors=ValidadoresPrestamo(pCliente, pProducto, pPrestamo.getCantidad());
+        
+        if(errors==""){
+            try {
+                stockRestante=pProducto.getCantidad()+pDevolucion.getCantidad();
+                pProducto.setCantidad(stockRestante);
+                pPrestamo.setCantidad(pPrestamo.getCantidad()-pDevolucion.getCantidad());
+                if(pPrestamo.getCantidad()==0){
+                    pPrestamo.setEstado(5);
+                }
+                productoRepositorio.save(pProducto);
+                prestamoRepositorio.save(pPrestamo);
+                return ("Se han devuelto correctamente " + pDevolucion.getCantidad() + ", "
+                        + "aun faltan " + pPrestamo.getCantidad() + " unidades por devolver");
             } catch (Exception e) {
                 return ("Error generando usuarios, intentelo nuevamente. " + e.getMessage());
             }

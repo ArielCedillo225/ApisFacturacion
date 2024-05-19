@@ -4,6 +4,7 @@
  */
 package com.api.general.Controlador;
 
+import com.api.general.Modelo.Devolucion;
 import com.api.general.Modelo.Prestamo;
 import com.api.general.Servicio.PrestamoServicio;
 import jakarta.validation.Valid;
@@ -40,9 +41,9 @@ public class PrestamoControlador {
         
     }
     
-    @GetMapping("/Prestamo/Devolver/{id}")
-    public String DevolverPrestamo(@PathVariable("id") Integer pId) {
-       return prestamoServicio.DevolucionPrestamo(pId);
+    @PostMapping("/Prestamo/Devolver")
+    public String DevolverPrestamo(@RequestBody Devolucion pDevolucion) {
+       return prestamoServicio.DevolucionPrestamo(pDevolucion);
         
     }
     

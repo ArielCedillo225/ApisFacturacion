@@ -60,7 +60,7 @@ public class Prestamo {
     private Date fechaDevolucion;
     
     @NotNull(message="El campo cantidad es obligatorio")
-    @Min(value=1, message="El campo cantidad debe ser igual o mayor a 1")
+    @Min(value=0, message="El campo cantidad debe ser igual o mayor a 1")
     @Column(name="PRE_Cantidad")
     private int cantidad;
 }

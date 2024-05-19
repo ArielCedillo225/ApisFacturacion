@@ -27,6 +27,9 @@ public interface PrestamoRepositorio extends JpaRepository<Prestamo, Integer> {
     @Query(value = "Select pre.* from TPrestamo pre where pre.PRE_Estado = 6 AND PRE_Cliente=?1", nativeQuery = true)
     List<Prestamo> ConsultaEnMora(@Param("Id") Integer pId);
     
+    @Query(value = "Select pre.* from TPrestamo pre where pre.PRE_Estado != 5", nativeQuery = true)
+    List<Prestamo> ConsultaNoDevueltos();
+    
     @Modifying
     @Transactional
     @Query(value = "Update TPrestamo SET PRE_Estado=6 WHERE ?1>=PRE_FechaDevolucion", nativeQuery = true)
