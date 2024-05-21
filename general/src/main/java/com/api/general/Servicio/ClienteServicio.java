@@ -1,6 +1,7 @@
 
 package com.api.general.Servicio;
 
+import com.api.general.Modelo.ActivarEstado;
 import com.api.general.Repositorio.ClienteRepositorio;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,20 +71,20 @@ public class ClienteServicio {
         return clienteRepositorio.ConsultaClientePorCedula(pId);
     }
     
-    public RespuestaApi ActualizarEstado(String cId){
+    public String ActualizarEstado(ActivarEstado cIdentificacion){
         RespuestaApi vRespuesta = new RespuestaApi();
         Cliente vCliente = new Cliente();
-        vCliente= clienteRepositorio.ConsultaClientePorCedula(cId);
+        vCliente= clienteRepositorio.ConsultaClientePorCedula(cIdentificacion.getIdentificacion());
         if (vCliente.getEstado()==1){
-            return vRespuesta=Respuesta("003", "Cliente ya Activo", "El cliente ya esta activo, no es necesario activarlo nuevamente con este endpoint");
+            return "Cliente ya Activo";
             
         } else {
             vCliente.setEstado(1);
         try {
             clienteRepositorio.save(vCliente);
-            return vRespuesta=Respuesta("001", "Transaccion realizada correctamente", "Proceso OK");
+            return "Activacion realizada correctamente";
         } catch (Exception e) {
-            return vRespuesta=Respuesta("002", "Proceso no realizado, intente mas tarde", "Error: " +e.getMessage());
+            return "Proceso no realizado, Error: " +e.getMessage();
         }  
         }
     }
@@ -128,19 +129,23 @@ public class ClienteServicio {
         return nombres;
     }
     
-    public RespuestaApi Registrar(IngresoCliente pIngresoCliente){
+    public String Registrar(IngresoCliente pIngresoCliente){
         RespuestaApi vRespuesta = new RespuestaApi();
         Cliente vCliente = new Cliente();
         
-        vCliente=IngresoDatos(pIngresoCliente);
+        vCliente= clienteRepositorio.ConsultaClientePorCedula(pIngresoCliente.getIdentificacion());
+        
+        if(vCliente!=null){
+            return "Ya cedula del cliente ya esta registrada";
+        } else{
+            vCliente=IngresoDatos(pIngresoCliente);
         
         switch (verificarCorreo(vCliente.getCorreo())) {
             case 1 -> {
-                return vRespuesta=Respuesta("003", "Se debe colocar un @", "Error de validaciion de @ en el String Correo");
+                return "Se debe colocar un @";
             }
             case 2 -> {
-                return vRespuesta=Respuesta("004", "El arroba no puede ir ni al inicio ni al final del correo", 
-                        "Error de validaciion de la posicion del @ en el String Correo");
+                return "El arroba no puede ir ni al inicio ni al final del correo";
             }
             default -> {
             }
@@ -148,10 +153,11 @@ public class ClienteServicio {
         
         try {
             clienteRepositorio.save(vCliente);
-            return vRespuesta=Respuesta("001", "Transaccion realizada correctamente", "Proceso OK");
+            return "Cliente agregado correctamente";
         } catch (Exception e) {
-            return vRespuesta=Respuesta("002", "Proceso no realizado, intente mas tarde", "Error: " +e.getMessage());
+            return "Proceso no realizado. Error: " +e.getMessage();
         }        
+        }
     }
     
     public RespuestaApi Respuesta(String pCodigo, String pMsgTecnico, String pMsgUsuario){

@@ -1,6 +1,7 @@
 
 package com.api.general.Controlador;
 
+import com.api.general.Modelo.ActivarEstado;
 import com.api.general.Modelo.RespuestaApi;
 import com.api.general.Servicio.ClienteServicio;
 import java.util.List;
@@ -70,14 +71,14 @@ public class ClienteControlador {
         return clienteServicio.ListarPorCedula(pId);
     }
     
-    @GetMapping("/Cliente/ActualizarEstado/{ci}")
-    public RespuestaApi ActualizarEstadoCliente(@RequestBody String pCedula){
-        return clienteServicio.ActualizarEstado(pCedula);
+    @PostMapping("/Cliente/ActualizarEstado")
+    public String ActualizarEstadoCliente(@RequestBody ActivarEstado pIdentificacion){
+        return clienteServicio.ActualizarEstado(pIdentificacion);
     }
     
     
     @PostMapping("/Cliente/Registrar")
-    public RespuestaApi RegistrarEstado(@RequestBody IngresoCliente pIngresoCliente) {
+    public String RegistrarEstado(@RequestBody IngresoCliente pIngresoCliente) {
             return clienteServicio.Registrar(pIngresoCliente);        
     }
     
